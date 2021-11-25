@@ -6,7 +6,6 @@ services:
     volumes:
       - ./php-fpm.conf:/usr/local/etc/php-fpm.conf
       - ./wordpress:/var/www/html
-      # - ./nginx/ssl/testwp.crt:/usr/local/etc/testwp.crt
       - php-fpm-vol:/usr/local/var
     environment:
       - WORDPRESS_DB_NAME=wordpress
@@ -15,7 +14,6 @@ services:
       - WORDPRESS_DB_USER=wp_user
       - WORDPRESS_DB_PASSWORD=wp_passwd
       - WORDPRESS_DEBUG=1
-      - TZ=Asia/Shanghai
     depends_on:
       - db
     restart: always
@@ -30,7 +28,6 @@ services:
       - MYSQL_USER=wp_user
       - MYSQL_PASSWORD=wp_passwd
       - MYSQL_DATABASE=wordpress
-      - TZ=Asia/Shanghai
     restart: always
 
   nginx:
@@ -45,8 +42,6 @@ services:
       # - ./logs/nginx:/var/log/nginx
       - ./wordpress:/var/www/html
       - php-fpm-vol:/var/run/php-fpm
-    environment:
-      - TZ=Asia/Shanghai
     depends_on:
       - wordpress
     restart: always
