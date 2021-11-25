@@ -1,0 +1,68 @@
+version: '3.9'
+services:
+  wordpress:
+    image: wordpress:php7.4-fpm-alpine
+    container_name: php7.4fpm
+    volumes:
+      - ./php-fpm.conf:/usr/local/etc/php-fpm.conf
+      - ./wordpress:/var/www/html
+      # - ./nginx/ssl/testwp.crt:/usr/local/etc/testwp.crt
+      - php-fpm-vol:/usr/local/var
+    environment:
+      - WORDPRESS_DB_NAME=wordpress
+      - WORDPRESS_TABLE_PREFIX=wp_
+      - WORDPRESS_DB_HOST=db
+      - WORDPRESS_DB_USER=wp_user
+      - WORDPRESS_DB_PASSWORD=wp_passwd
+      - WORDPRESS_DEBUG=1
+      - TZ=Asia/Shanghai
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: mariadb:10.7
+    container_name: mariadb
+    volumes:
+      - ./mariadb-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_USER=wp_user
+      - MYSQL_PASSWORD=wp_passwd
+      - MYSQL_DATABASE=wordpress
+      - TZ=Asia/Shanghai
+    restart: always
+
+  nginx:
+    image: nginx:1.21
+    container_name: nginx-php
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx:/etc/nginx/conf.d
+      # - ./logs/nginx:/var/log/nginx
+      - ./wordpress:/var/www/html
+      - php-fpm-vol:/var/run/php-fpm
+    environment:
+      - TZ=Asia/Shanghai
+    depends_on:
+      - wordpress
+    restart: always
+
+  adminer:
+    image: adminer
+    restart: always
+    links:
+      - db
+    ports:
+      - 8080:8080
+
+volumes:
+  php-fpm-vol:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./run
